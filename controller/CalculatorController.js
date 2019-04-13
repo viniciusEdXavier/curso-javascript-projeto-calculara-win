@@ -6,10 +6,16 @@ class CalculatorController
         this._firstNumberString = "";
         this._secondNumberString = "";
         this._operator = "";
+        let that = this;
 
+        document.querySelectorAll(".btn").forEach(button => {
+            button.addEventListener("click", () => this.buttonKeyPush(button.innerHTML))
+        });
+
+    
     }
 
-    calc()
+    calculateFields()
     {
         return eval(this._firstNumberString + this._operator + this._secondNumberString);
     }
@@ -19,13 +25,26 @@ class CalculatorController
         this._display.innerHTML = num;
     }
 
-    buttonClick(button)
+    buttonKeyPush(buttonName)
     {
-        console.log(button);
-        switch(button)
+        switch(buttonName)
         {
-            default:
+            case "0":
+            case "1":
+            case "2":
+            case "3":
+            case "4":
+            case "5":
+            case "6":
+            case "7":
+            case "8":
+            case "9":
+                
+                break;
 
+
+
+            default:
                 break;
         }
     }
