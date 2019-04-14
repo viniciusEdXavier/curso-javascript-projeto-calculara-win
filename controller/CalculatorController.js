@@ -3,10 +3,9 @@ class CalculatorController
     constructor()
     {
         this._display = document.querySelector("#display");
-        this._firstNumberString = "";
-        this._secondNumberString = "";
+        this._displayNumberString = "";
+        this._hiddenNumberString = "";
         this._operator = "";
-        let that = this;
 
         document.querySelectorAll(".btn").forEach(button => {
             button.addEventListener("click", () => this.buttonKeyPush(button.innerHTML))
@@ -17,12 +16,12 @@ class CalculatorController
 
     calculateFields()
     {
-        return eval(this._firstNumberString + this._operator + this._secondNumberString);
+        return eval(this._hiddenNumberString + this._operator + this._displayNumberString);
     }
 
     updateDisplay(num)
     {
-        this._display.innerHTML = num;
+       this._display.innerHTML = num;
     }
 
     buttonKeyPush(buttonName)
@@ -39,13 +38,45 @@ class CalculatorController
             case "7":
             case "8":
             case "9":
+                this.displayNumberString = this._displayNumberString+=buttonName;
+                break;
+            case "+":
+            case "-":
+            case "÷":
+            case "X":
+                if(this._displayNumberString != "")
+                {
+                    if(this._operator == "")
+                    {
+                        this._hiddenNumberString = this._displayNumberString;
+                    }
+                    else 
+                    {
+                        this._hiddenNumberString = this.calculateFields();
+                        this.displayNumberString = this._hiddenNumberString;
+                    }
+                }
+                this._operator = buttonName;
+                this._displayNumberString = "";
                 
                 break;
-
-
-
+            case "=":
+                this.updateDisplay(this.calculateFields());
+                break;
+            case "CE":
+                this.displayNumberString = "";
+                break;
             default:
                 break;
+        }
+    }
+
+    set displayNumberString(numberString)
+    {
+        this._displayNumberString = numberString;
+        if(numberString != "") 
+        {
+            this.updateDisplay(this._displayNumberString);
         }
     }
 }
