@@ -16,13 +16,23 @@ class CalculatorController
 
     calculateFields(hiddenNumberString, operator, displayNumberString)
     {
+        hiddenNumberString = hiddenNumberString || 0;
+        displayNumberString = displayNumberString || hiddenNumberString;
+
+        if(operator == "")
+        {
+            return;
+        }
+        if(operator == "/" && displayNumberString == 0)
+        {
+            this.displayResultString = "Impossível dividir por zero!";
+        }
+        
         let stringToCalculate = hiddenNumberString + operator + displayNumberString;
-        stringToCalculate = stringToCalculate.replace(/,/g, ".");
-        console.log(stringToCalculate);
+
         let result = String(eval(stringToCalculate));
         if(result)
         {
-            result = result.replace(/\./g, ",");
             this.displayNumberString = result;
         }
         else
@@ -46,7 +56,7 @@ class CalculatorController
             case "7":
             case "8":
             case "9":
-                this.displayNumberString += buttonName;
+                this._lastKeyIsNumber ? this.displayNumberString += buttonName : this.displayNumberString = buttonName;
                 this._lastKeyIsNumber = true;
                 break;
 
@@ -69,10 +79,6 @@ class CalculatorController
                 
                 break;
             case "=":
-                if(this.displayNumberString == "")
-                {
-                    this.displayNumberString = this.hiddenNumberString;
-                }
                 this.calculateFields(this.hiddenNumberString, this.operator, this.displayNumberString);
                 this._lastKeyIsNumber = false;
                 break;
@@ -111,7 +117,8 @@ class CalculatorController
 
     set displayNumberString(numberString)
     {
-        this._displayNumberString = numberString;
+
+        this._displayNumberString = numberString.replace(/\./g, ",");
         if(this._displayNumberString != "") 
         {
             this.displayResultString = this._displayNumberString;
@@ -120,7 +127,7 @@ class CalculatorController
 
     get displayNumberString()
     {
-        return this._displayNumberString;
+        return this._displayNumberString.replace(/,/g, ".");
     }
 
     set operator(buttonText)
@@ -152,7 +159,7 @@ class CalculatorController
 
     set hiddenNumberString(hiddenNumberString)
     {
-        this._hiddenNumberString = hiddenNumberString;
+        this._hiddenNumberString = hiddenNumberString.replace(/,/g, ".");
     }
 
     get hiddenNumberString()
