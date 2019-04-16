@@ -6,7 +6,7 @@ class CalculatorController
         this._displayNumberString = "";
         this._hiddenNumberString = "";
         this._operator = "";
-
+        this._lastKeyIsNumber = false;
         document.querySelectorAll(".btn").forEach(button => {
             button.addEventListener("click", () => this.buttonKeyPush(button.innerHTML))
         });
@@ -14,18 +14,21 @@ class CalculatorController
     
     }
 
-    calculateFields()
+    calculateFields(hiddenNumberString, operator, displayNumberString)
     {
-        let stringToCalculate = this.hiddenNumberString + this.operator + this.displayNumberString;
-        let result = eval(stringToCalculate);
-        this.updateDisplay(result);
-
-        return result;
-    }
-
-    updateDisplay(num)
-    {
-       this._display.innerHTML = num;
+        let stringToCalculate = hiddenNumberString + operator + displayNumberString;
+        stringToCalculate = stringToCalculate.replace(/,/g, ".");
+        console.log(stringToCalculate);
+        let result = String(eval(stringToCalculate));
+        if(result)
+        {
+            result = result.replace(/\./g, ",");
+            this.displayNumberString = result;
+        }
+        else
+        {
+            this.displayNumberString = 0;
+        }
     }
 
     buttonKeyPush(buttonName)
@@ -43,40 +46,65 @@ class CalculatorController
             case "7":
             case "8":
             case "9":
-                this.displayNumberString +=buttonName;
+                this.displayNumberString += buttonName;
+                this._lastKeyIsNumber = true;
                 break;
 
             case "+":
             case "-":
             case "÷":
             case "X":
-                if(this.displayNumberString != "")
+            
+                if(this._lastKeyIsNumber)
                 {
-                    if(this.operator == "")
+                    if(this.operator != "")
                     {
-                        this.hiddenNumberString = this.displayNumberString;
-                    }
-                    else 
-                    {
-                        this.hiddenNumberString = this.calculateFields();
-                    }
+                        this.calculateFields(this.hiddenNumberString, this.operator, this.displayNumberString);
+                    }   
+                    this.hiddenNumberString = this.displayResultString;
                 }
                 this.operator = buttonName;
                 this.displayNumberString = "";
+                this._lastKeyIsNumber = false;
                 
                 break;
             case "=":
-                this.calculateFields();
+                if(this.displayNumberString == "")
+                {
+                    this.displayNumberString = this.hiddenNumberString;
+                }
+                this.calculateFields(this.hiddenNumberString, this.operator, this.displayNumberString);
+                this._lastKeyIsNumber = false;
                 break;
             case "CE":
                 this.displayNumberString = "";
-                this.updateDisplay(0);
+                this.displayResultString = "0";
                 break;
             case "C":
                 this.displayNumberString = "";
                 this.hiddenNumberString = "";
-                this.updateDisplay(0)
+                this.displayResultString = "0";
+                break;
+            case "±":
+                if(this.displayNumberString != "")
+                {
+                    if(this.displayNumberString.charAt(0) === "-")
+                    {
+                        this.displayNumberString = this.displayNumberString.substr(1);
+                    }
+                    else
+                    {
+                        this.displayNumberString = "-" + this.displayNumberString;
+                    }
+                }
+            case ",":
+                if(this.displayNumberString.indexOf(",") == -1)
+                {
+                    this.displayNumberString == "" ? this.displayNumberString = "0," : this.displayNumberString += ",";
+                }
+                break;
             default:
+                throw new Error("Botão não cadastrado!");
                 break;
         }
     }
@@ -86,7 +114,7 @@ class CalculatorController
         this._displayNumberString = numberString;
         if(this._displayNumberString != "") 
         {
-            this.updateDisplay(this._displayNumberString);
+            this.displayResultString = this._displayNumberString;
         }
     }
 
@@ -107,8 +135,6 @@ class CalculatorController
 
         let operator = operatorDictionary[buttonText];
 
-        //operator !== undefined ? this._operator = operator : () => {throw new Error("Operador não cadastrado!")};
-        
         if(operator !== undefined) 
         {
             this._operator = operator;
@@ -132,5 +158,15 @@ class CalculatorController
     get hiddenNumberString()
     {
         return this._hiddenNumberString;
+    }
+
+    set displayResultString(text)
+    {
+        this._display.innerHTML = text;
+    }
+
+    get displayResultString()
+    {
+        return this._display.innerHTML;
     }
 }
