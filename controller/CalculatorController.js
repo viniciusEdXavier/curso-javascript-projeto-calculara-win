@@ -16,7 +16,6 @@ class CalculatorController
 
     calculateFields(hiddenNumberString, operator, displayNumberString)
     {
-        hiddenNumberString = hiddenNumberString || 0;
         displayNumberString = displayNumberString || hiddenNumberString;
 
         if(operator == "")
@@ -26,6 +25,7 @@ class CalculatorController
         if(operator == "/" && displayNumberString == 0)
         {
             this.displayResultString = "Impossível dividir por zero!";
+            return;
         }
         
         let stringToCalculate = hiddenNumberString + operator + displayNumberString;
@@ -38,6 +38,7 @@ class CalculatorController
         else
         {
             this.displayNumberString = 0;
+            console.log("então...")
         }
     }
 
@@ -56,7 +57,11 @@ class CalculatorController
             case "7":
             case "8":
             case "9":
-                this._lastKeyIsNumber ? this.displayNumberString += buttonName : this.displayNumberString = buttonName;
+                if(!this._lastKeyIsNumber)
+                {
+                    this.displayNumberString = "";
+                }
+                this.displayNumberString += buttonName;
                 this._lastKeyIsNumber = true;
                 break;
 
@@ -67,10 +72,7 @@ class CalculatorController
             
                 if(this._lastKeyIsNumber)
                 {
-                    if(this.operator != "")
-                    {
-                        this.calculateFields(this.hiddenNumberString, this.operator, this.displayNumberString);
-                    }   
+                    this.calculateFields(this.hiddenNumberString, this.operator, this.displayNumberString);
                     this.hiddenNumberString = this.displayResultString;
                 }
                 this.operator = buttonName;
@@ -106,8 +108,24 @@ class CalculatorController
             case ",":
                 if(this.displayNumberString.indexOf(",") == -1)
                 {
-                    this.displayNumberString == "" ? this.displayNumberString = "0," : this.displayNumberString += ",";
+                    this.displayNumberString == "" ? this.displayNumberString = "0," : 
+                                                     this.displayNumberString += ",";
                 }
+                break;
+            case "%":
+                this.displayNumberString = parseFloat(this.hiddenNumberString * (this.displayNumberString/100)).toString();
+                break;
+            case "√":
+                this.displayNumberString = Math.sqrt(parseFloat(this.displayNumberString)).toString();
+                break;
+            case "x²":
+                this.displayNumberString = parseFloat(this.displayNumberString * this.displayNumberString).toString();
+                break;
+            case "¹/x":
+                this.displayNumberString = parseFloat(1/this.displayNumberString).toString();
+                break;
+            case "←":
+                this.displayNumberString = this.displayNumberString.slice(0, -1);
                 break;
             default:
                 throw new Error("Botão não cadastrado!");
@@ -164,7 +182,7 @@ class CalculatorController
 
     get hiddenNumberString()
     {
-        return this._hiddenNumberString;
+        return this._hiddenNumberString || 0;
     }
 
     set displayResultString(text)
