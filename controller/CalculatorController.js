@@ -6,7 +6,8 @@ class CalculatorController
         this._displayNumberString = "";
         this._hiddenNumberString = "";
         this._operator = "";
-        this._lastKeyIsNumber = false;
+        this._isFinished = false;
+        this._isReadyToNewNumber = true;
         document.querySelectorAll(".btn").forEach(button => {
             button.addEventListener("click", () => this.buttonKeyPush(button.innerHTML))
         });
@@ -14,32 +15,19 @@ class CalculatorController
     
     }
 
-    calculateFields(hiddenNumberString, operator, displayNumberString)
+    calculateFields(firstNumber, operator, secondNumber)
     {
-        displayNumberString = displayNumberString || hiddenNumberString;
 
-        if(operator == "")
+        /*if(operator == "/" && displayNumberString == 0)
         {
-            return;
-        }
-        if(operator == "/" && displayNumberString == 0)
-        {
-            this.displayResultString = "Impossível dividir por zero!";
-            return;
-        }
-        
-        let stringToCalculate = hiddenNumberString + operator + displayNumberString;
+           return "Impossível dividir por zero!";
+        }*/
 
+        let stringToCalculate = firstNumber + operator + secondNumber;
         let result = String(eval(stringToCalculate));
-        if(result)
-        {
-            this.displayNumberString = result;
-        }
-        else
-        {
-            this.displayNumberString = 0;
-            console.log("então...")
-        }
+
+        return result;
+        
     }
 
     buttonKeyPush(buttonName)
@@ -57,12 +45,20 @@ class CalculatorController
             case "7":
             case "8":
             case "9":
-                if(!this._lastKeyIsNumber)
+                
+                if(this._isReadyToNewNumber)
+                {
+                    this.displayResultString = "";
+                    this._isReadyToNewNumber = false;
+                }
+                if(this._isFinished)
                 {
                     this.displayNumberString = "";
+                    this.hiddenNumberString = "";
+                    this.operator = "";
+                    this._isFinished = false;
                 }
-                this.displayNumberString += buttonName;
-                this._lastKeyIsNumber = true;
+                this.displayNumberString = this.displayResultString+buttonName;
                 break;
 
             case "+":
@@ -70,19 +66,24 @@ class CalculatorController
             case "÷":
             case "X":
             
-                if(this._lastKeyIsNumber)
+                if(this.operator && this.displayNumberString && !this._isFinished)
                 {
-                    this.calculateFields(this.hiddenNumberString, this.operator, this.displayNumberString);
-                    this.hiddenNumberString = this.displayResultString;
-                }
-                this.operator = buttonName;
+                    this.displayResultString = this.calculateFields(this.hiddenNumberString, this.operator, this.displayNumberString);
+                }    
+                this.hiddenNumberString = this.displayResultString;
                 this.displayNumberString = "";
-                this._lastKeyIsNumber = false;
+                this.operator = buttonName;
+                this._isReadyToNewNumber = true;
+                this._isFinished = false;
                 
                 break;
             case "=":
-                this.calculateFields(this.hiddenNumberString, this.operator, this.displayNumberString);
-                this._lastKeyIsNumber = false;
+                this.displayNumberString = this.displayNumberString || this.hiddenNumberString;
+                this.displayResultString = this.calculateFields(this.hiddenNumberString, this.operator, this.displayNumberString);
+                this.hiddenNumberString = this.displayResultString;
+                this._isReadyToNewNumber = true;
+                this._isFinished = true;
+
                 break;
             case "CE":
                 this.displayNumberString = "";
@@ -91,6 +92,7 @@ class CalculatorController
             case "C":
                 this.displayNumberString = "";
                 this.hiddenNumberString = "";
+                this.operator = ""
                 this.displayResultString = "0";
                 break;
             case "±":
@@ -135,7 +137,6 @@ class CalculatorController
 
     set displayNumberString(numberString)
     {
-
         this._displayNumberString = numberString.replace(/\./g, ",");
         if(this._displayNumberString != "") 
         {
@@ -182,12 +183,12 @@ class CalculatorController
 
     get hiddenNumberString()
     {
-        return this._hiddenNumberString || 0;
+        return this._hiddenNumberString;
     }
 
     set displayResultString(text)
     {
-        this._display.innerHTML = text;
+        this._display.innerHTML = text == "0"? text : text.replace(/0*/, "");
     }
 
     get displayResultString()
