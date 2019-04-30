@@ -6,33 +6,30 @@ class CalculatorController
         this._displayNumberString = "";
         this._hiddenNumberString = "";
         this._operator = "";
-        this._isFinished = false;
-        this._isReadyToNewNumber = true;
+        this._lastKeyPushed = "";
         document.querySelectorAll(".btn").forEach(button => {
             button.addEventListener("click", () => this.buttonKeyPush(button.innerHTML))
         });
-
-    
     }
 
     calculateFields(firstNumber, operator, secondNumber)
     {
-
-        /*if(operator == "/" && displayNumberString == 0)
+        if(operator == "/" && secondNumber == 0)
         {
+            this.displayNumberString = "";
+            this.hiddenNumberString = "";
+            this.operator = "";
            return "Impossível dividir por zero!";
-        }*/
+        }
 
         let stringToCalculate = firstNumber + operator + secondNumber;
-        let result = String(eval(stringToCalculate));
+        let result = eval(stringToCalculate).toString();
 
         return result;
-        
     }
 
     buttonKeyPush(buttonName)
     {
-    
         switch(buttonName)
         {
             case "0":
@@ -46,56 +43,59 @@ class CalculatorController
             case "8":
             case "9":
                 
-                if(this._isReadyToNewNumber)
+                if(["+", "-", "÷", "X"].includes(this._lastKeyPushed))
                 {
                     this.displayResultString = "";
-                    this._isReadyToNewNumber = false;
                 }
-                if(this._isFinished)
+                if("=" == this._lastKeyPushed)
                 {
-                    this.displayNumberString = "";
+                    this.displayResultString = "";
                     this.hiddenNumberString = "";
                     this.operator = "";
-                    this._isFinished = false;
                 }
-                this.displayNumberString = this.displayResultString+buttonName;
+                if(this.displayNumberString.length<14)
+                {
+                    this.displayNumberString = this.displayResultString+buttonName;
+                }
                 break;
-
+ 
             case "+":
             case "-":
             case "÷":
             case "X":
             
-                if(this.operator && this.displayNumberString && !this._isFinished)
+                if(this.operator && this.displayNumberString && this._lastKeyPushed !="=")
                 {
                     this.displayResultString = this.calculateFields(this.hiddenNumberString, this.operator, this.displayNumberString);
                 }    
                 this.hiddenNumberString = this.displayResultString;
                 this.displayNumberString = "";
                 this.operator = buttonName;
-                this._isReadyToNewNumber = true;
-                this._isFinished = false;
                 
                 break;
             case "=":
-                this.displayNumberString = this.displayNumberString || this.hiddenNumberString;
-                this.displayResultString = this.calculateFields(this.hiddenNumberString, this.operator, this.displayNumberString);
-                this.hiddenNumberString = this.displayResultString;
-                this._isReadyToNewNumber = true;
-                this._isFinished = true;
 
+                if(this.operator)
+                {
+                    this.displayNumberString = this.displayNumberString || this.hiddenNumberString;
+                    this.displayResultString = this.calculateFields(this.hiddenNumberString, this.operator, this.displayNumberString);
+                    this.hiddenNumberString = this.displayResultString;
+                }
                 break;
             case "CE":
+            
                 this.displayNumberString = "";
                 this.displayResultString = "0";
                 break;
             case "C":
+
                 this.displayNumberString = "";
                 this.hiddenNumberString = "";
                 this.operator = ""
                 this.displayResultString = "0";
                 break;
             case "±":
+
                 if(this.displayNumberString != "")
                 {
                     if(this.displayNumberString.charAt(0) === "-")
@@ -108,6 +108,7 @@ class CalculatorController
                     }
                 }
             case ",":
+
                 if(this.displayNumberString.indexOf(",") == -1)
                 {
                     this.displayNumberString == "" ? this.displayNumberString = "0," : 
@@ -127,12 +128,13 @@ class CalculatorController
                 this.displayNumberString = parseFloat(1/this.displayNumberString).toString();
                 break;
             case "←":
-                this.displayNumberString = this.displayNumberString.slice(0, -1);
+                this.displayNumberString = this.displayNumberString.length == 1 ? "0" : this.displayNumberString.slice(0, -1);
                 break;
             default:
                 throw new Error("Botão não cadastrado!");
                 break;
         }
+        this._lastKeyPushed = buttonName;
     }
 
     set displayNumberString(numberString)
